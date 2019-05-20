@@ -1,0 +1,5 @@
+*.h5
+*.txt
+yolov3.weights
+./model_data/*
+*.pyc
