@@ -7,7 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1mcKrKllYILjEM3GtbBHzEIkSC2gBH14C
 """
 
-
 from google.colab import drive
 drive.mount('/gdrive')
 BASE_PATH ="/gdrive/My Drive/Artificial Intellegence/YOLO/logs/"
