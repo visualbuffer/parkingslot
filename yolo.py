@@ -11,8 +11,8 @@ import numpy as np
 from keras import backend as K
 from keras.models import load_model
 from keras.layers import Input
-from PIL import Image, ImageFont, ImageDraw
-
+from PIL import   ImageFont, ImageDraw
+from PIL import Image as PILImage
 from yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from yolo3.utils import letterbox_image
 import os
@@ -20,11 +20,11 @@ from keras.utils import multi_gpu_model
 
 class YOLO(object):
     _defaults = {
-        "model_path": 'model_data/yolo.h5',
+        "model_path":  "./model_data/trained_weights_final.h5", #
         "anchors_path": 'model_data/yolo_anchors.txt',
         "classes_path": 'model_data/coco_classes.txt',
-        "score" : 0.3,
-        "iou" : 0.45,
+        "score" : 0.15,
+        "iou" : 0.4,
         "model_image_size" : (416, 416),
         "gpu_num" : 1,
     }
@@ -37,15 +37,13 @@ class YOLO(object):
             return "Unrecognized attribute name '" + n + "'"
 
     def __init__(self, **kwargs):
-
-        self.model_path: str
+        self.model_path : str
         self.anchors_path: str
         self.classes_path: str
         self.score : float
         self.iou : float
-        self.model_image_size : (int, int)
+        self.model_image_size : (int,int)
         self.gpu_num : int
-
         self.__dict__.update(self._defaults) # set up default values
         self.__dict__.update(kwargs) # and update with user overrides
         self.class_names = self._get_class()
@@ -54,18 +52,20 @@ class YOLO(object):
         self.boxes, self.scores, self.classes = self.generate()
 
     def _get_class(self):
-        classes_path = os.path.expanduser(self.classes_path)
-        with open(classes_path) as f:
-            class_names = f.readlines()
-        class_names = [c.strip() for c in class_names]
+#         classes_path = os.path.expanduser(self.classes_path)
+#         with open(classes_path) as f:
+#             class_names = f.readlines()
+#         class_names = [c.strip() for c in class_names]
+        class_names = ["car"]
         return class_names
 
     def _get_anchors(self):
-        anchors_path = os.path.expanduser(self.anchors_path)
-        with open(anchors_path) as f:
-            anchors = f.readline()
-        anchors = [float(x) for x in anchors.split(',')]
-        return np.array(anchors).reshape(-1, 2)
+#         anchors_path = os.path.expanduser(self.anchors_path)
+#         with open(anchors_path) as f:
+#             anchors = f.readline()
+#         anchors = [float(x) for x in anchors.split(',')]
+        anchors = [[ 36 , 21],[ 44,  32],[ 59,  56],[ 63,  32],[ 87,  99],[ 92,  45],[149,  70],[221, 128], [413, 237]]
+        return np.array(anchors)#.reshape(-1, 2)
 
     def generate(self):
         model_path = os.path.expanduser(self.model_path)
@@ -76,7 +76,11 @@ class YOLO(object):
         num_classes = len(self.class_names)
         is_tiny_version = num_anchors==6 # default setting
         try:
+#             pdb.set_trace()
+#             self.yolo_model,_,_ = create_model(self.model_image_size, self.anchors, num_classes,
+#                   freeze_body=2, weights_path=model_path)
             self.yolo_model = load_model(model_path, compile=False)
+            print(self.yolo_model.summary())
         except:
             self.yolo_model = tiny_yolo_body(Input(shape=(None,None,3)), num_anchors//2, num_classes) \
                 if is_tiny_version else yolo_body(Input(shape=(None,None,3)), num_anchors//3, num_classes)
@@ -107,80 +111,85 @@ class YOLO(object):
                 len(self.class_names), self.input_image_shape,
                 score_threshold=self.score, iou_threshold=self.iou)
         return boxes, scores, classes
+      
+    def find_objects(self, image):  
+      if self.model_image_size != (None, None):
+          assert self.model_image_size[0]%32 == 0, 'Multiples of 32 required'
+          assert self.model_image_size[1]%32 == 0, 'Multiples of 32 required'
+          boxed_image = letterbox_image(image, tuple(reversed(self.model_image_size)))
+      else:
+          new_image_size = (image.width - (image.width % 32),
+                            image.height - (image.height % 32))
+          boxed_image = letterbox_image(image, new_image_size)
+      image_data = np.array(boxed_image, dtype='float32')
 
-    def determine_bbox(self,image):
-        
+      #print(image_data.shape)
+      image_data /= 255.
+      image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
 
-        if self.model_image_size != (None, None):
-            assert self.model_image_size[0]%32 == 0, 'Multiples of 32 required'
-            assert self.model_image_size[1]%32 == 0, 'Multiples of 32 required'
-            boxed_image = letterbox_image(image, tuple(reversed(self.model_image_size)))
-        else:
-            new_image_size = (image.width - (image.width % 32),
-                              image.height - (image.height % 32))
-            boxed_image = letterbox_image(image, new_image_size)
-        image_data = np.array(boxed_image, dtype='float32')
+      out_boxes, out_scores, out_classes = self.sess.run(
+          [self.boxes, self.scores, self.classes],
+          feed_dict={
+              self.yolo_model.input: image_data,
+              self.input_image_shape: [image.size[1], image.size[0]],
+              K.learning_phase(): 0
+          })
 
-        print(image_data.shape)
-        image_data /= 255.
-        image_data = np.expand_dims(image_data, 0)  # Add batch dimension.
-
-        out_boxes, out_scores, out_classes = self.sess.run(
-            [self.boxes, self.scores, self.classes],
-            feed_dict={
-                self.yolo_model.input: image_data,
-                self.input_image_shape: [image.size[1], image.size[0]],
-                K.learning_phase(): 0
-            })
-        return out_boxes, out_scores, out_classes
+      #print('Found {} boxes for {}'.format(len(out_boxes), 'img'))
+      return out_boxes, out_scores, out_classes , np.arange(len(out_classes))  
     
-    def detect_image(self, image):
-        start = timer()
-
-       
-
-        out_boxes, out_scores, out_classes = self.determine_bbox(image)
-
-        print('Found {} boxes for {}'.format(len(out_boxes), 'img'))
-
+    
+    def draw_rect(self, image, out_boxes, out_scores, out_classes, labels):
         font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
                     size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
         thickness = (image.size[0] + image.size[1]) // 300
-
+        im_cnt = 0
         for i, c in reversed(list(enumerate(out_classes))):
+            
             predicted_class = self.class_names[c]
-            box = out_boxes[i]
-            score = out_scores[i]
+            if predicted_class in ["car","bus","truck"] :
+              box = out_boxes[i]
+              score = out_scores[i]
 
-            label = '{} {:.2f}'.format(predicted_class, score)
-            draw = ImageDraw.Draw(image)
-            label_size = draw.textsize(label, font)
+              label = str(labels[i])#'{}'.format(im_cnt)
+              im_cnt= im_cnt+1
+              draw = ImageDraw.Draw(image)
+              label_size = draw.textsize(label, font)
 
-            top, left, bottom, right = box
-            top = max(0, np.floor(top + 0.5).astype('int32'))
-            left = max(0, np.floor(left + 0.5).astype('int32'))
-            bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
-            right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
-            print(label, (left, top), (right, bottom))
+              top, left, bottom, right = box
+              top = max(0, np.floor(top + 0.5).astype('int32'))
+              left = max(0, np.floor(left + 0.5).astype('int32'))
+              bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
+              right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
+              #print(label, (left, top), (right, bottom))
 
-            if top - label_size[1] >= 0:
-                text_origin = np.array([left, top - label_size[1]])
-            else:
-                text_origin = np.array([left, top + 1])
+              if top - label_size[1] >= 0:
+                  text_origin = np.array([left, top - label_size[1]])
+              else:
+                  text_origin = np.array([left, top + 1])
 
-            # My kingdom for a good redistributable image drawing library.
-            for i in range(thickness):
-                draw.rectangle(
-                    [left + i, top + i, right - i, bottom - i],
-                    outline=self.colors[c])
-            draw.rectangle(
-                [tuple(text_origin), tuple(text_origin + label_size)],
-                fill=self.colors[c])
-            draw.text(text_origin, label, fill=(0, 0, 0), font=font)
-            del draw
+              # My kingdom for a good redistributable image drawing library.
+              for i in range(thickness):
+                  draw.rectangle(
+                      [left + i, top + i, right - i, bottom - i],
+                      outline=self.colors[c])
+              draw.rectangle(
+                  [tuple(text_origin), tuple(text_origin + label_size)],
+                  fill=self.colors[c])
+              draw.text(text_origin, label, fill=(0, 0, 0), font=font)
+              del draw
+        return image
 
+
+    def detect_image(self, image, draw = True):
+        start = timer()
+
+        out_boxes, out_scores, out_classes, labels = self.find_objects(image)
+
+        
         end = timer()
-        print(end - start)
+        self.draw_rect( image, out_boxes, out_scores, out_classes, labels)
+        #print(end - start)
         return image
 
     def close_session(self):
@@ -205,7 +214,7 @@ def detect_video(yolo, video_path, output_path=""):
     prev_time = timer()
     while True:
         return_value, frame = vid.read()
-        image = Image.fromarray(frame)
+        image =PILImage.fromarray(frame)
         image = yolo.detect_image(image)
         result = np.asarray(image)
         curr_time = timer()
@@ -226,4 +235,3 @@ def detect_video(yolo, video_path, output_path=""):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     yolo.close_session()
-

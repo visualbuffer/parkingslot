@@ -16,69 +16,8 @@ import numpy as np
 import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
-
-
-ROOT_DIR = os.path.abspath("./")
-
-
-sys.path.append(ROOT_DIR)  # To find local version of the library
-from mrcnn import utils
-import mrcnn.model as modellib
-from mrcnn import visualize
-# Import COCO config
-sys.path.append(os.path.join(ROOT_DIR, "samples/coco/"))  # To find local version
+import pickle
 import coco
-
-# %matplotlib inline 
-
-
-# Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "logs")
-# ! wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"
-# Local path to trained weights file
-COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
-# Download COCO trained weights from Releases if needed
-if not os.path.exists(COCO_MODEL_PATH):
-    utils.download_trained_weights(COCO_MODEL_PATH)
-
-# Directory of images to run detection on
-IMAGE_DIR = os.path.join(ROOT_DIR, "images")
-
-class InferenceConfig(coco.CocoConfig):
-    # Set batch size to 1 since we'll be running inference on
-    # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
-    GPU_COUNT = 1
-    IMAGES_PER_GPU = 1
-
-# COCO Class names
-# Index of the class in the list is its ID. For example, to get ID of
-# the teddy bear class, use: class_names.index('teddy bear')
-class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
-               'bus', 'train', 'truck', 'boat', 'traffic light',
-               'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird',
-               'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear',
-               'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie',
-               'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
-               'kite', 'baseball bat', 'baseball glove', 'skateboard',
-               'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup',
-               'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
-               'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
-               'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
-               'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
-               'keyboard', 'cell phone', 'microwave', 'oven', 'toaster',
-               'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
-               'teddy bear', 'hair drier', 'toothbrush']
-
-
-
-! mkdir ./movie
-! mkdir ./movie/tmp
-! mkdir ./movie/train
-! mkdir ./movie/test
-
-TRAIN_MOVIE = "./movie/train/"
-TEST_MOVIE = "./movie/test/"
-TMP_MOVIE ="./movie/tmp"
 import pdb
 import cv2 
 import pandas as pd
@@ -86,6 +25,51 @@ import numpy as np
 import gc
 from tqdm import tqdm_notebook as tqdm
 from datetime import datetime
+
+from mrcnn import utils
+import mrcnn.model as modellib
+from mrcnn import visualize
+from utilities import assign_next_frame ,get_data
+
+ROOT_DIR = os.path.abspath("./")
+sys.path.append(ROOT_DIR)  # To find local version of the library
+sys.path.append(os.path.join(ROOT_DIR, "samples/coco/"))  # To find local version
+MODEL_DIR = os.path.join(ROOT_DIR, "logs")
+COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
+if not os.path.exists(COCO_MODEL_PATH):
+    utils.download_trained_weights(COCO_MODEL_PATH)
+IMAGE_DIR = os.path.join(ROOT_DIR, "images")
+
+class InferenceConfig(coco.CocoConfig):
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
+class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
+    'bus', 'train', 'truck', 'boat', 'traffic light',
+    'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird',
+    'cat', 'dog', 'horse', 'sheep', 'cow', 'elephant', 'bear',
+    'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie',
+    'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball',
+    'kite', 'baseball bat', 'baseball glove', 'skateboard',
+    'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup',
+    'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple',
+    'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza',
+    'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed',
+    'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
+    'keyboard', 'cell phone', 'microwave', 'oven', 'toaster',
+    'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors',
+    'teddy bear', 'hair drier', 'toothbrush']
+
+
+
+# ! mkdir ./movie
+# ! mkdir ./movie/tmp
+# ! mkdir ./movie/train
+# ! mkdir ./movie/test
+
+# TRAIN_MOVIE = "./movie/train/"
+# TEST_MOVIE = "./movie/test/"
+# TMP_MOVIE ="./movie/tmp"
+
 
 def create_boxes(images, model, verbose = 0 ,  plot = False):
   data  = pd.DataFrame()
@@ -117,32 +101,7 @@ def create_boxes(images, model, verbose = 0 ,  plot = False):
   data = data[["labels", 'x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w',  'a' , 'b', 'score', 'class', 'frame' ]]
   return data ,  masks
 
-def assign_next_frame(prior, post, th = 0.7, pr =False):
-  iou =np.zeros(len(prior))
-  status =np.zeros(len(prior))
-  iou_mat = np.zeros((len(prior), len(post)))
-  for k in range(len(prior)) : 
-    if pr  and k ==18:
-      pdb.set_trace()
-      print(k,len(prior))
-    p = prior.loc[k,:]
-    iou_mat[k,:] = utils.compute_iou( (p.y1,p.x1,p.y2,p.x2),\
-                     post[["y1","x1","y2","x2"]].values,p.a, post["a"].values)
-  #iou_mat =  np.tril(iou_mat)
-  id_map ={}
-  count =  min(len(prior), len(post))
-  mat=np.copy(iou_mat)
-  while count >0 :
-    #pdb.set_trace()
-    r,k  = np.unravel_index(np.argmax(iou_mat, axis=None), iou_mat.shape)
-    if iou_mat[r,k] > th :
-      id_map[post.at[k,"labels"]] =prior.at[r,"labels"]
-      iou[r] = iou_mat[r,k]
-      status[r]=1
-    iou_mat[r,:] =  -99
-    iou_mat[:,k] =  -99
-    count = count -1
-  return mat, iou, id_map, status.astype(bool)
+
 
 def compute_distance(df, image, th = 0.92, label = "Parking Slots", plot = False):
   df.reset_index(drop=True, inplace=True)
@@ -262,39 +221,13 @@ def look_for_slots(data,  img=[],PRUNE_TH = 3,
                 show_mask=False, show_bbox=True,
                 colors=colors, 
                       captions=captions)
-#       plot_frame( img[i], df[["y1","x2","y2","x1"]].values,  df["class"].values, df["found"], df["labels"])
     
   slots.drop(slots[slots["found"] < PRUNE_TH*3].index, inplace=True) 
   slots = compute_distance(slots, img[0], th = MERGE_TH*0.8, label = "Parking Slots "+ str(MERGE_STEP))
   print(len(slots), "SLOTS FOUND")
   return slots
 
-def get_data():
-  PATH = "./FULL_IMAGE_1000x750/"
-  image_data  =  pd.DataFrame()#[],columns=["image","path","camera","date","condition"])
-  conditions = ["SUNNY" , "RAINY", "OVERCAST"]
-  dates = os.listdir(PATH)
 
-  for condition in conditions :
-    date_path   = PATH+condition+"/"
-    dates  = os.listdir(date_path)
-    for date in dates : 
-      camera_path   = date_path+date+"/"
-      cameras  = os.listdir(camera_path)
-      for camera in cameras :
-        #print(camera)
-        images = os.listdir(camera_path+camera+"/")
-        paths  =  [camera_path+camera+"/" +  image for image in images]
-        d =  pd.DataFrame({"image" : images ,  "path": paths})
-        d["camera"]  = camera
-        d["date"] = date
-        d["condition"] = condition
-  #      print(d)
-        image_data = image_data.append(d, ignore_index=True)
-  image_data["camera"] = image_data["camera"].astype("category")
-  image_data["date"] = image_data["date"].astype("category")
-  image_data["condition"] = image_data["condition"].astype("category")
-  return image_data
 
 
 image_data =  get_data()
@@ -308,32 +241,23 @@ model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
 # Load weights trained on MS-COCO
 model.load_weights(COCO_MODEL_PATH, by_name=True)
 
-camera ="camera1"
-images =  image_data[image_data["camera"] == camera ]["path"].values
-images = np.sort(images)
+for camera  in  image_data["camera"].unique():
+  images =  image_data[image_data["camera"] == camera ]["path"].values
+  images = np.sort(images)
 
-img_train = images[:21]
-img_pred = images[len(images) // 2:len(images) // 2 +2]
-park_data,masks =  create_boxes(img_train, model)
-park_slots = look_for_slots(park_data,  img= img_train,plot =False,
-                                PRUNE_TH = 1,
-                                ASSIGN_TH =  0.6,
-                                PRUNE_STEP =  10,
-                                MERGE_STEP =  20,
-                                MERGE_TH =  0.7)
-park_slots.drop(park_slots[park_slots["found"] < 3].index, inplace=True) 
-park_slots=compute_distance(park_slots, images[20], th=0.2,  label ="20")
-park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]] = park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]].astype(int)
-#   create_video(path ="./movie/tmp/",file_name="./movie/train/"+ camera+"_train.gif" )
-park_slots= park_slots.reset_index(drop=True)
+  img_train = images[:21]
+  img_pred = images[len(images) // 2:len(images) // 2 +2]
+  park_data,masks =  create_boxes(img_train, model)
+  park_slots = look_for_slots(park_data,  img= img_train,plot =False,
+                    PRUNE_TH = 1,
+                    ASSIGN_TH =  0.6,
+                    PRUNE_STEP =  10,
+                    MERGE_STEP =  20,
+                    MERGE_TH =  0.7)
+  park_slots.drop(park_slots[park_slots["found"] < 3].index, inplace=True) 
+  park_slots=compute_distance(park_slots, images[20], th=0.2,  label ="20")
+  park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]] = park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]].astype(int)
+  park_slots= park_slots.reset_index(drop=True)
+  park_slots.to_csv("./parkings/"+camera+".csv", index = False)
 
-import colorsys
-brightness = 1.0 
-hsv = [(i / 10, 1, brightness) for i in range(10)]
-colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
 
-colors
-
-park_slots
-
-u
