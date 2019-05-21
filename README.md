@@ -89,13 +89,13 @@ python ./convert.py ./yolov3.cfg yolov3.weights model_data/yolo.h5
 wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"
 
 ```
-<br>
-![](./assets/detection_final.png)
-<br>
 
-<br>
+![](./assets/detection_final.png)
+
+
+
 ### Specialize YOLO to cars
-<br>
+
 
 ```python
 
@@ -105,9 +105,9 @@ wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_c
 ! python yolo_training.py
 
 ```
-<br>
+
 ## DETECTION
-<br>
+
 
 ```python
 
