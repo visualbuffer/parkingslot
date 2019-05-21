@@ -34,18 +34,33 @@ MaskRCNN /  YOLO provides us means to tackle the first problem while RESNET /VGG
 
 We can use any video feed. For the purpose of demonstration feed from CNRPARK dataset (https://cnrpark.it) has been used.  It has a total of 164 parking spaces captured by 9 camera feeds in different climatic condition and lighting
 
-#### Whole field of view
 
-`! wget http://cnrpark.it/dataset/CNR-EXT_FULL_IMAGE_1000x750.tar
+
+```python
+# Whole field of view
+! wget http://cnrpark.it/dataset/CNR-EXT_FULL_IMAGE_1000x750.tar
 ! tar -xvf  CNR-EXT_FULL_IMAGE_1000x750.tar
-! rm CNR-EXT_FULL_IMAGE_1000x750.tar`
+! rm CNR-EXT_FULL_IMAGE_1000x750.tar
 
 
-#### Cropped image pathes of parking slots labelled as filled / empty 
+# Cropped image pathes of parking slots labelled as filled / empty 
 
-`! wget http://cnrpark.it/dataset/CNR-EXT-Patches-150x150.zip
+! wget http://cnrpark.it/dataset/CNR-EXT-Patches-150x150.zip
 ! unzip CNR-EXT-Patches-150x150.zip
-! rm CNR-EXT-Patches-150x150.zip`
+! rm CNR-EXT-Patches-150x150.zip
+
+# VOC dataset for specializing yolo
+! wget https://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar
+! wget https://pjreddie.com/media/files/VOCtrainval_06-Nov-2007.tar
+! wget https://pjreddie.com/media/files/VOCtest_06-Nov-2007.tar
+! tar xf VOCtrainval_11-May-2012.tar
+! tar xf VOCtrainval_06-Nov-2007.tar
+! tar xf VOCtest_06-Nov-2007.tar
+
+! rm -rf VOCtrainval_11-May-2012.tar
+! rm -rf VOCtrainval_06-Nov-2007.tar
+! rm -rf VOCtest_06-Nov-2007.tar
+```
 
 
 
@@ -60,17 +75,26 @@ I have used both maskrcnn and yolo. Maskrcnn unsuprisingly detects finer objects
 
 ![Detection Parking Slots using MASKRCNN](assets/carslots.png)
 
-### YOLO
+# YOLO
 
-`! wget https://pjreddie.com/media/files/yolov3.weights
-! python ./convert.py ./yolov3.cfg yolov3.weights model_data/yolo.h5`
+```! wget https://pjreddie.com/media/files/yolov3.weights
+! python ./convert.py ./yolov3.cfg yolov3.weights model_data/yolo.h5
 
 
-### MASKRCNN
+# MASKRCNN
+! wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"```
 
 (./assets/detection_final.png)
-`! wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"`
 
+
+
+### Specialize YOLO to cars
+```
+# LOAD VOC DATA FILTERED BY CARS
+python voc_annotation.py
+# SPECIALIZE YOLO TO CARS
+python yolo_training.py
+```
 
 ## DETECTION
 
