@@ -28,7 +28,10 @@ MaskRCNN /  YOLO provides us means to tackle the first problem while RESNET /VGG
 </a>
 ---
 
-## DOWNLOAD THE IMAGES [CNRPARK Dataset]
+## DOWNLOAD THE DATA
+
+### DOWNLOAD THE IMAGES [CNRPARK Dataset]
+
 We can use any video feed. For the purpose of demonstration feed from CNRPARK dataset (https://cnrpark.it) has been used.  It has a total of 164 parking spaces captured by 9 camera feeds in different climatic condition and lighting
 
 #### Whole field of view
@@ -46,10 +49,16 @@ We can use any video feed. For the purpose of demonstration feed from CNRPARK da
 
 
 
-## DOWNLOAD PRETRAINED MODEL WEIGHTS
+### DOWNLOAD PRETRAINED MODEL WEIGHTS
 
 I have used both maskrcnn and yolo. Maskrcnn unsuprisingly detects finer objects in the corners while yolo misses out on a few slots even after it has been specialized to detect only car classes. 
 
+## DETECTION
+
+'''
+python Parking_Slot_mask_rcnn.py
+python resnet_occupancy.py
+'''
 
 
 
