@@ -3,4 +3,4 @@
 yolov3.weights
 ./model_data/*
 *.pyc
-*.jpg
+./images/*
