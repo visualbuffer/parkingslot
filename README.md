@@ -74,7 +74,7 @@ I have used both maskrcnn and yolo. Maskrcnn unsuprisingly detects finer objects
 
 ## DETECTION
 
-'''
+```
 python Parking_Slot_mask_rcnn.py
 python resnet_occupancy.py
-'''
+```
