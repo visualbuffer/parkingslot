@@ -53,12 +53,7 @@ We can use any video feed. For the purpose of demonstration feed from CNRPARK da
 
 I have used both maskrcnn and yolo. Maskrcnn unsuprisingly detects finer objects in the corners while yolo misses out on a few slots even after it has been specialized to detect only car classes. 
 
-## DETECTION
 
-'''
-python Parking_Slot_mask_rcnn.py
-python resnet_occupancy.py
-'''
 
 
 
@@ -77,4 +72,9 @@ python resnet_occupancy.py
 `! wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"`
 
 
+## DETECTION
 
+'''
+python Parking_Slot_mask_rcnn.py
+python resnet_occupancy.py
+'''
