@@ -1,8 +1,10 @@
 # PARKING SLOT DETECTION
 Finding a vaccant spot in a parking  lot is a tough ask. It is even difficult to manage such facilites with a varying incoming traffic. Which slots are vaccant at this instant? What time do we need more slots. Are commuters finding it difficult to reach to a particular slot?
-(./assets/lot.jpg)
+![](./assets/lot.jpg)
+<br>
 We corrently use either a network of ground mounted occupancy sensor or a large staff to determine some of the answers to these questions. Sensors are quite effective but need maintainence and cost about 40 -80$ per node in unit + installation. A staff only sollution is cumbersome and error prone
- (./assets/vehicle-detection.jpg)
+ ![](./assets/vehicle-detection.jpg)
+ <br>
 One approch to the problem can be using the security camera footage to detect the slot occupancy using deep learning. While there are limitations (clear visibility trees shade , lighting) the approach can be extended to some lots atr a very minimal costs.
 The code tries to address some these problems.
 
@@ -75,30 +77,41 @@ I have used both maskrcnn and yolo. Maskrcnn unsuprisingly detects finer objects
 
 ![Detection Parking Slots using MASKRCNN](assets/carslots.png)
 
-# YOLO
 
-```! wget https://pjreddie.com/media/files/yolov3.weights
-! python ./convert.py ./yolov3.cfg yolov3.weights model_data/yolo.h5
+
+```
+# YOLO
+wget https://pjreddie.com/media/files/yolov3.weights
+python ./convert.py ./yolov3.cfg yolov3.weights model_data/yolo.h5
 
 
 # MASKRCNN
-! wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"```
+wget "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"
 
-(./assets/detection_final.png)
+```
+<br>
+![](./assets/detection_final.png)
+<br>
 
-
-
+<br>
 ### Specialize YOLO to cars
-```
-# LOAD VOC DATA FILTERED BY CARS
-python voc_annotation.py
+<br>
+
+```python
+
+# Load Voc Data
+! python voc_annotation.py
 # SPECIALIZE YOLO TO CARS
-python yolo_training.py
-```
+! python yolo_training.py
 
+```
+<br>
 ## DETECTION
+<br>
 
-```
-python Parking_Slot_mask_rcnn.py
-python resnet_occupancy.py
+```python
+
+! python Parking_Slot_mask_rcnn.py
+! python resnet_occupancy.py
+
 ```
