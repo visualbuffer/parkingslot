@@ -92,6 +92,7 @@ class YOLO_Kmeans:
         print("K anchors:\n {}".format(result))
         print("Accuracy: {:.2f}%".format(
             self.avg_iou(all_boxes, result) * 100))
+        return result
 
 
 if __name__ == "__main__":
