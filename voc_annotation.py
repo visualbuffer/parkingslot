@@ -41,10 +41,10 @@ def convert_annotation(year, image_id, list_file,wd):
       list_file.write('\n')
 
 wd = getcwd()
-list_file = open('train.txt', 'w')
 for year, image_set in sets:
+    list_file = open('%s_%s.txt'%(year, image_set), 'w')
     image_ids = open('VOCdevkit/VOC%s/ImageSets/Main/%s.txt'%(year, image_set)).read().strip().split()
     for image_id in image_ids:     
         convert_annotation(year, image_id, list_file,wd)   
-list_file.close()
+    list_file.close()
 
