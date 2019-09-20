@@ -210,25 +210,25 @@ def plot_frame( image, out_boxes,  out_classes, found, labels):
 #     plt.imsave(TMP_MOVIE+str(ts)+".png",image)
     plt.close()
     return image
+if __name__ == "__main__": 
+  image_data =  get_data()
 
-image_data =  get_data()
 
-
-for camera  in  image_data["camera"].unique():
-    images =  image_data[image_data["camera"] == camera ]["path"].values
-    images = np.sort(images)
-    img_train = images[:len(images) // 2]
-    park_data =  create_boxes(img_train)
-    park_slots = look_for_slots(park_data, img= img_train,plot =False,
-                                    PRUNE_TH = 1,
-                                    PRUNE_STEP =  10,
-                                    MERGE_STEP =  50,
-                                    MERGE_TH =  0.8)
-    park_slots.drop(park_slots[park_slots["found"] < 3].index, inplace=True) 
-    park_slots=compute_distance(park_slots, images[20], th=0.2,  label ="20")
-    park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]] = park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]].astype(int)
-    #   create_video(path ="./movie/tmp/",file_name="./movie/train/"+ camera+"_train.gif" )
-    park_slots= park_slots.reset_index(drop=True)
-    park_slots.to_csv("./parkings/"+camera+".csv", index = False)
+  for camera  in  image_data["camera"].unique():
+      images =  image_data[image_data["camera"] == camera ]["path"].values
+      images = np.sort(images)
+      img_train = images[:len(images) // 2]
+      park_data =  create_boxes(img_train)
+      park_slots = look_for_slots(park_data, img= img_train,plot =False,
+                                      PRUNE_TH = 1,
+                                      PRUNE_STEP =  10,
+                                      MERGE_STEP =  50,
+                                      MERGE_TH =  0.8)
+      park_slots.drop(park_slots[park_slots["found"] < 3].index, inplace=True) 
+      park_slots=compute_distance(park_slots, images[20], th=0.2,  label ="20")
+      park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]] = park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]].astype(int)
+      #   create_video(path ="./movie/tmp/",file_name="./movie/train/"+ camera+"_train.gif" )
+      park_slots= park_slots.reset_index(drop=True)
+      park_slots.to_csv("./parkings/"+camera+".csv", index = False)
     
     
