@@ -42,6 +42,7 @@ def create_boxes(images):
   data["yc"] = (data["y1"] + data["y2"])/2
   data["w"] =  data["x1"] -data["x2"]
   data["b"] = data["y2"] - data["y1"]
+  data["a"]= data["w"] *data["b"]
   data["d"] =  np.sqrt(data["b"]*data["b"]  + data["w"]*data["w"] )
   data = data[["labels", 'x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w',  'd' , 'b', 'score', 'class', 'frame' ]]
 #   mask = data["class"].apply(lambda x: x in [2, 5, 7]) 
@@ -231,4 +232,37 @@ if __name__ == "__main__":
       park_slots= park_slots.reset_index(drop=True)
       park_slots.to_csv("./parkings/"+camera+".csv", index = False)
     
+  
+  
+  
+  
+  
+  
+  
+def train_and_detect(image_data, camera, pred_fr=120):
+  print("PROCESSING", camera)
+  images =  image_data[image_data["camera"] == camera ]["path"].values
+  images = np.sort(images)
+
+  img_train = images[:len(images) // 2]
+  img_pred = images[len(images) // 2:len(images) // 2 +2]
+  park_data =  create_boxes(img_train)
+  park_slots = look_for_slots(park_data, img= img_train,plot =False,
+                                  PRUNE_TH = 1,
+                                  PRUNE_STEP =  10,
+                                  MERGE_STEP =  50,
+                                  MERGE_TH =  0.8)
+  park_slots.drop(park_slots[park_slots["found"] < 3].index, inplace=True) 
+  park_slots=compute_distance(park_slots, images[20], th=0.2,  label ="20")
+  park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]] = park_slots[['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b', "found"]].astype(int)
+#   create_video(path ="./movie/tmp/",file_name="./movie/train/"+ camera+"_train.gif" )
+  park_slots= park_slots.reset_index(drop=True)
+  img_pred_small = img_pred[:pred_fr]
+  found = np.zeros((len(img_pred_small),len(park_slots)))
+  print("PROCESSING ",pred_fr, "FRAMES TO DETECT OCCUPANCY")
+  for i in tqdm(range(len(img_pred_small))):
+    image = PILImage.open(img_pred[i]).convert('RGB')
+    found[i,:] = find_cars_in_slots(park_slots, image, plot=True, k=i)
+#   create_video(path ="./movie/tmp/",file_name="./movie/train/"+ camera+"_detection.gif" ) 
+  return park_slots, found.astype(bool)
     
