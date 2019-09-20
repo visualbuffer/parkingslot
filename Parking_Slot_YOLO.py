@@ -44,7 +44,7 @@ def create_boxes(images):
   data["b"] = data["y2"] - data["y1"]
   data["a"]= data["w"] *data["b"]
   data["d"] =  np.sqrt(data["b"]*data["b"]  + data["w"]*data["w"] )
-  data = data[["labels", 'x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w',  'd' , 'b', 'score', 'class', 'frame' ]]
+  data = data[["labels", 'x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w',  'd' , 'b', 'score', 'class', 'frame' ,'a']]
 #   mask = data["class"].apply(lambda x: x in [2, 5, 7]) 
 #   data = data[mask]
   return data
