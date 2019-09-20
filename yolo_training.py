@@ -652,7 +652,6 @@ def train():
                 epochs=50,
                 verbose=0,
                 initial_epoch=0, max_queue_size=1)
-        model.load_weights(log_dir + 'trained_weights_stage_0.h5')
         del last_layer_model
         del bottleneck_model
         gc.collect()
