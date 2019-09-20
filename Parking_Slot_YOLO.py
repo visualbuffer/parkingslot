@@ -104,8 +104,8 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
   
   
   n_fr = data["frame"].nunique()
-  cols = ["labels", 'x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b',"class" ]
-  base_col = ['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b']
+  cols = ["labels", 'x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b',"class",'a' ]
+  base_col = ['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b','a']
   slots  = data[data["frame"] == 0 ][cols]
   slots["found"] = 1
 
