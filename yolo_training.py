@@ -696,6 +696,6 @@ def train():
         model.save_weights(log_dir + 'trained_weights_final_2.h5')
 
     # Further training if needed.
-
-gc.collect()
-train()
+if __name__ == '__main__' :
+    gc.collect()
+    train()
