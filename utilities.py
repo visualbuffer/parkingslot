@@ -20,11 +20,11 @@ def calc_iou(x1,y1,x2,y2,df):
     if (dx>=0) and (dy>=0):
         int_ar[i] = dx*dy
   mask =  np.logical_or(int_ar >= ar_df ,  int_ar >= ar)
-  
-  
   iou = int_ar /(ar + ar_df - int_ar)
   iou[mask] =1
+  print('mask', mask,'iou',iou)
   return iou
+
 
 
 def assign_next_frame(prior, post, th = 0.7, pr =False):
@@ -32,14 +32,13 @@ def assign_next_frame(prior, post, th = 0.7, pr =False):
   status =np.zeros(len(prior))
   iou_mat = np.zeros((len(prior), len(post)))
   for k in range(len(prior)) : 
-    if pr  and k ==18:
-      pdb.set_trace()
       print(k,len(prior))
     p = prior.loc[k,:]
     iou_mat[k,:] = calc_iou(p.x1,p.y1,p.x2,p.y2, post)
 #     iou_mat[k,:] =utils.compute_iou( [p.y1,p.x1,p.y2,p.x2],\
 #                      post[["y1","x1","y2","x2"]].values,p.a, post["a"].values)
   #iou_mat =  np.tril(iou_mat)
+  print(iou_mat.mean())
   id_map ={}
   count =  min(len(prior), len(post))
   mat=np.copy(iou_mat)
