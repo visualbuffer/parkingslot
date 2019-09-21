@@ -3,6 +3,29 @@ from mrcnn import utils
 import os
 import pandas as pd
 
+def calc_iou(x1,y1,x2,y2,df):
+  df = df.reset_index(drop=True)
+  ar_df = (df["w"]*df["b"]).values
+  ar    = (x1-x2)*(y2-y1)
+  int_ar =  np.zeros(len(df))
+  for i in range(len(df)):
+    dx1 = df.at[i,"x1"]
+    dy1 = df.at[i,"y1"]
+    dx2 = df.at[i,"x2"]
+    dy2 = df.at[i,"y2"]
+    
+    dx = min(dx1, x1) - max(dx2, x2)
+    dy = min(dy2, y2) - max(dy1, y1) 
+    #pdb.set_trace()
+    if (dx>=0) and (dy>=0):
+        int_ar[i] = dx*dy
+  mask =  np.logical_or(int_ar >= ar_df ,  int_ar >= ar)
+  
+  
+  iou = int_ar /(ar + ar_df - int_ar)
+  iou[mask] =1
+  return iou
+
 def assign_next_frame(prior, post, th = 0.7, pr =False):
   iou =np.zeros(len(prior))
   status =np.zeros(len(prior))
