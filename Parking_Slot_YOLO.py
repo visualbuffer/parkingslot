@@ -59,7 +59,7 @@ pd.options.mode.chained_assignment = None # Disable warning from pandas
 def compute_distance(df, image, th = 0.92, label = "Parking Slots", plot = False):
   df.reset_index(drop=True, inplace=True)
   n =  len(df)
-  base_col = ['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b']
+  base_col = ['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b',]
   df.reset_index(drop=True, inplace=True)
   mat, _, _, _ = assign_next_frame(df, df, th = 0.6)
   np.fill_diagonal(mat, -9)
@@ -93,9 +93,6 @@ def compute_distance(df, image, th = 0.92, label = "Parking Slots", plot = False
     plt.show()
     plt.close()
   return df
-#   dist_mat = np.zeros(n,n)
-#   for in in range(len(df)):
-#     dist_mat
 
 def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
                                 PRUNE_STEP =  10,
@@ -107,17 +104,12 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
   cols = ["labels", 'x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b',"class",'a' ]
   base_col = ['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b','a']
   slots  = data[data["frame"] == 0 ][cols]
-  slots["found"] = 1
-
-#   out_boxes,  out_classes, found, labels
-# "empty":"#4a148c","occupy":"#f44336", "new":"#7cb342","del":"#80deea" 
+  slots["found"] = 1 
   print("LOOKING FOR PARKING SLOTS INSIDE IMAGE FRAMES")
   for i in  tqdm(range(1 ,n_fr)) : 
     post =  data[data["frame"]==i].reset_index(drop=True)
-    _,iou, id_map, status = assign_next_frame(slots, post, th = 0.6)
-    #print(id_map.keys(), status.sum())
     
-    ## found again
+    _,iou, id_map, status = assign_next_frame(slots, post, th = 0.6)
     mask = post["labels"].isin(id_map.keys())
     slots.loc[status,"found"] = slots.loc[status,"found"] +1
     occupy =  post[mask]
@@ -127,18 +119,11 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
     occupy.sort_values(by =["labels"], inplace = True)
     occupy.reset_index(drop=True, inplace=True)
     slots.loc[status,base_col] = slots.loc[status,base_col].values *(1 - 1/(i+1)) +  occupy[base_col].values/(i+1)
-     
-    # clean up
     if i % PRUNE_STEP ==0 :
       slots.drop(slots[slots["found"] < PRUNE_TH+1].index, inplace=True) 
-      #print(slots)
-
-    # merge 
     if i % MERGE_STEP ==0 :
       
       slots = compute_distance(slots, img[i-1], th = MERGE_TH, label = "Parking Slots "+ str(i))
-       
-    # new
     idx = np.logical_not(post["labels"].isin(id_map.keys()))
     new  =  post[idx]
     new["labels"] =  new["labels"] + slots["labels"].max() + 1
@@ -160,7 +145,6 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
     
   slots.drop(slots[slots["found"] < PRUNE_TH*3].index, inplace=True) 
   slots = compute_distance(slots, img[0], th = MERGE_TH*0.8, label = "Parking Slots "+ str(MERGE_STEP))
-  print(len(slots), "SLOTS FOUND")
   return slots
 
        
