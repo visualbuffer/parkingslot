@@ -105,7 +105,17 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
   base_col = ['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b']
   slots  = data[data["frame"] == 0 ][cols]
   slots["found"] = 1
-
+  def plot_images():
+    df = slots[['x1', 'y1', 'x2', 'y2',"found","labels" ]]
+    df["class"] ="empty"
+    msk = df["labels"].isin(id_map.values())
+    df.loc[msk,"class"] = "occupy"
+    nw_df = new[['x1', 'y1', 'x2', 'y2',"labels" ]]
+    nw_df["class"] = "new"
+    nw_df["found"]=1
+    df = df.append(nw_df,  sort=True).reset_index(drop=True)
+    df["found"] = df["found"].astype(int)
+    plot_frame( img[i], df[["y1","x2","y2","x1"]].values,  df["class"].values, df["found"], df["labels"])
 #   out_boxes,  out_classes, found, labels
 # "empty":"#4a148c","occupy":"#f44336", "new":"#7cb342","del":"#80deea" 
   print("LOOKING FOR PARKING SLOTS INSIDE IMAGE FRAMES")
@@ -144,20 +154,12 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
       new["found"] = 1
     slots = slots.append(new,  sort=True).reset_index(drop=True) 
     if plot | (i % MERGE_STEP*5 ==0):
-      df = slots[['x1', 'y1', 'x2', 'y2',"found","labels" ]]
-      df["class"] ="empty"
-      msk = df["labels"].isin(id_map.values())
-      df.loc[msk,"class"] = "occupy"
-      nw_df = new[['x1', 'y1', 'x2', 'y2',"labels" ]]
-      nw_df["class"] = "new"
-      nw_df["found"]=1
-      df = df.append(nw_df,  sort=True).reset_index(drop=True)
-      df["found"] = df["found"].astype(int)
-      plot_frame( img[i], df[["y1","x2","y2","x1"]].values,  df["class"].values, df["found"], df["labels"])
+      plot_images()
     
   slots.drop(slots[slots["found"] < PRUNE_TH*3].index, inplace=True) 
   slots = compute_distance(slots, img[0], th = MERGE_TH*0.8, label = "Parking Slots "+ str(MERGE_STEP))
   print(len(slots), "SLOTS FOUND")
+  plot_images()
   return slots
 
        
