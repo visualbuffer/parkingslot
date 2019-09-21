@@ -97,7 +97,7 @@ def compute_distance(df, image, th = 0.6, label = "Parking Slots", plot = False)
     df.at[r,"found"] =  df.at[r,"found"]+ df.at[k,"found"]
   to_del.sort(reverse = True) 
   for i in range(len(to_del)):
-    df.drop(k, axis=0, inplace = True)
+    df.drop(i, axis=0, inplace = True)
   if plot :
     plt.figure()
     box_img = yolo.draw_rect(PILImage.fromarray(cv2.imread(image)),\
