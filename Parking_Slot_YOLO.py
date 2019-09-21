@@ -84,6 +84,7 @@ def compute_distance(df, image, th = 0.6, label = "Parking Slots", plot = False)
       mat[:,r] = -9
     count = count -1
 #   print(to_merge)
+  to_del = []
   for i in range(len(to_merge)):
     r = to_merge[i][0]
     k = to_merge[i][1]
@@ -91,8 +92,11 @@ def compute_distance(df, image, th = 0.6, label = "Parking Slots", plot = False)
       x =r
       r = k
       k = x
+    to_del.append(k)
     df.loc[r,base_col] =(df.loc[r,base_col] * df.loc[r,"found"] +  df.loc[r,base_col]* df.loc[k,"found"])/(df.loc[r,"found"]+df.loc[k,"found"])
     df.at[r,"found"] =  df.at[r,"found"]+ df.at[k,"found"]
+  to_del.sort(reverse = True) 
+  for i in range(len(to_del)):
     df.drop(k, axis=0, inplace = True)
   if plot :
     plt.figure()
