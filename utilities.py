@@ -32,7 +32,6 @@ def assign_next_frame(prior, post, th = 0.7, pr =False):
   status =np.zeros(len(prior))
   iou_mat = np.zeros((len(prior), len(post)))
   for k in range(len(prior)) : 
-      print(k,len(prior))
     p = prior.loc[k,:]
     iou_mat[k,:] = calc_iou(p.x1,p.y1,p.x2,p.y2, post)
 #     iou_mat[k,:] =utils.compute_iou( [p.y1,p.x1,p.y2,p.x2],\
