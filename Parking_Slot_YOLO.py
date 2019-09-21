@@ -74,13 +74,13 @@ def compute_distance(df, image, th = 0.6, label = "Parking Slots", plot = False)
       x = k
       if df["found"][r] <  df["found"][k] :
         x =r
-          mat[x,:] = -9
-          mat[:,x] = -9
+      mat[x,:] = -9
+      mat[:,x] = -9
     else :     
-    mat[r,:] = -9
-    mat[:,k] = -9
-    mat[k,:] = -9
-    mat[:,r] = -9
+      mat[r,:] = -9
+      mat[:,k] = -9
+      mat[k,:] = -9
+      mat[:,r] = -9
     count = count -1
 #   print(to_merge)
   for i in range(len(to_merge)):
