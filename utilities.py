@@ -22,7 +22,6 @@ def calc_iou(x1,y1,x2,y2,df):
   mask =  np.logical_or(int_ar >= ar_df ,  int_ar >= ar)
   iou = int_ar /(ar + ar_df - int_ar)
   iou[mask] =1
-  print('mask', mask,'iou',iou)
   return iou
 
 
