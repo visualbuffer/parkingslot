@@ -76,7 +76,8 @@ def compute_distance(df, image, th = 0.6, label = "Parking Slots", plot = False)
         x =r
       mat[x,:] = -9
       mat[:,x] = -9
-    else :     
+    else :
+      count = 0
       mat[r,:] = -9
       mat[:,k] = -9
       mat[k,:] = -9
@@ -167,14 +168,6 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
       plot_images()
   slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
   slots.drop(slots[slots["found"] < PRUNE_TH*3].index, inplace=True) 
-  print(len(slots), "SLOTS FOUND")
-  plot_images()
-  
-  slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
-  print(len(slots), "SLOTS FOUND")
-  plot_images()
-  
-  slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
   print(len(slots), "SLOTS FOUND")
   plot_images()
   return slots
