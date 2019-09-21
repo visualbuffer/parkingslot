@@ -56,7 +56,8 @@ pd.options.mode.chained_assignment = None # Disable warning from pandas
 
 
 
-def compute_distance(df, image, th = 0.92, label = "Parking Slots", plot = False):
+def compute_distance(df, image, th = 0.6, label = "Parking Slots", plot = False):
+  print("MERGE TH for combine =", th)
   df.reset_index(drop=True, inplace=True)
   n =  len(df)
   base_col = ['x1', 'y1', 'x2', 'y2',  'xc', 'yc', 'w' , 'b',]
@@ -157,7 +158,7 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
     if len(new ) > 0 :
       new["found"] = 1
     slots = slots.append(new,  sort=True).reset_index(drop=True) 
-    if plot | (i % MERGE_STEP*5 ==0):
+    if plot and (i % MERGE_STEP*5 ==0):
       plot_images()
   slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
   slots.drop(slots[slots["found"] < PRUNE_TH*3].index, inplace=True) 
