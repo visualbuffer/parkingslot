@@ -80,6 +80,10 @@ def compute_distance(df, image, th = 0.92, label = "Parking Slots", plot = False
   for i in range(len(to_merge)):
     r = to_merge[i][0]
     k = to_merge[i][1]
+    if df["found"][r] <  df["found"][k] :
+      x =r
+      r = k
+      k = x
     df.loc[r,base_col] =(df.loc[r,base_col] * df.loc[r,"found"] +  df.loc[r,base_col]* df.loc[k,"found"])/(df.loc[r,"found"]+df.loc[k,"found"])
     df.at[r,"found"] =  df.at[r,"found"]+ df.at[k,"found"]
     df.drop(k, axis=0, inplace = True)
