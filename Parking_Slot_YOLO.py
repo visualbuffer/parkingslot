@@ -166,7 +166,7 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
        
 def plot_frame( image, out_boxes,  out_classes, found, labels):
     image =PILImage.fromarray(cv2.imread(image))
-    font = ImageFont.truetype(font='font/FiraMono-Medium.otf',
+    font = ImageFont.truetype("arial.ttf",
                 size=np.floor(3e-2 * image.size[1] + 0.5).astype('int32'))
     thickness = (image.size[0] + image.size[1]) // 300
     #colors ={"empty":"#4a148c","occupy":"#f44336", "new":"#7cb342","del":"#80deea"  }
