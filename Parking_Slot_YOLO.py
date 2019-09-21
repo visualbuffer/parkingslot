@@ -97,7 +97,7 @@ def compute_distance(df, image, th = 0.92, label = "Parking Slots", plot = False
 def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
                                 PRUNE_STEP =  10,
                                 MERGE_STEP =  20,
-                                MERGE_TH =  0.75):
+                                MERGE_TH =  0.65):
   
   
   n_fr = data["frame"].nunique()
@@ -155,9 +155,9 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
     slots = slots.append(new,  sort=True).reset_index(drop=True) 
     if plot | (i % MERGE_STEP*5 ==0):
       plot_images()
-    
+  slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
   slots.drop(slots[slots["found"] < PRUNE_TH*3].index, inplace=True) 
-  slots = compute_distance(slots, img[0], th = MERGE_TH*0.8, label = "Parking Slots "+ str(MERGE_STEP))
+  
   print(len(slots), "SLOTS FOUND")
   plot_images()
   return slots
