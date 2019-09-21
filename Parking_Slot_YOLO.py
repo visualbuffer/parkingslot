@@ -71,7 +71,12 @@ def compute_distance(df, image, th = 0.6, label = "Parking Slots", plot = False)
     r,k = np.unravel_index(np.argmax(mat, axis=None), mat.shape)
     if mat[r,k] > th :
       to_merge.append([r,k])
-
+      x = k
+      if df["found"][r] <  df["found"][k] :
+        x =r
+          mat[x,:] = -9
+          mat[:,x] = -9
+    else :     
     mat[r,:] = -9
     mat[:,k] = -9
     mat[k,:] = -9
