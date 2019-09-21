@@ -121,7 +121,7 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
   print("LOOKING FOR PARKING SLOTS INSIDE IMAGE FRAMES")
   for i in  tqdm(range(1 ,n_fr)) : 
     post =  data[data["frame"]==i].reset_index(drop=True)
-    _,iou, id_map, status = assign_next_frame(slots, post, th = 0.6)
+    _,iou, id_map, status = assign_next_frame(slots, post, th = MERGE_TH)
     #print(id_map.keys(), status.sum())
     
     ## found again
@@ -157,7 +157,14 @@ def look_for_slots(data, img=[],PRUNE_TH = 3, plot = True,
       plot_images()
   slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
   slots.drop(slots[slots["found"] < PRUNE_TH*3].index, inplace=True) 
+  print(len(slots), "SLOTS FOUND")
+  plot_images()
   
+  slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
+  print(len(slots), "SLOTS FOUND")
+  plot_images()
+  
+  slots = compute_distance(slots, img[0], th = MERGE_TH*0.9, label = "Parking Slots "+ str(MERGE_STEP))  
   print(len(slots), "SLOTS FOUND")
   plot_images()
   return slots
